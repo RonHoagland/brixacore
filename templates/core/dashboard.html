@@ -1,0 +1,42 @@
+{% extends "layouts/app_shell.html" %}
+
+{% block title %}Dashboard - BrixaWares{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block main_content %}
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--bx-spacing-xl);">
+    
+    <!-- Welcome Widget -->
+    <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border);">
+        <h3 style="margin-bottom: var(--bx-spacing-md); color: var(--bx-color-primary);">Welcome, {{ user.get_full_name|default:user.username }}</h3>
+        <p style="color: var(--bx-color-text-muted);">
+            Today is {% now "l, F jS, Y" %}.
+        </p>
+        <div style="margin-top: var(--bx-spacing-lg);">
+            <p>Your platform is ready.</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions Placeholder -->
+    <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border);">
+        <h3 style="margin-bottom: var(--bx-spacing-md);">Quick Actions</h3>
+        <p style="color: var(--bx-color-text-muted); font-style: italic;">
+            Shortcuts to common tasks will appear here.
+        </p>
+        <!-- Temporary example buttons -->
+        <div style="display: flex; gap: var(--bx-spacing-sm); flex-wrap: wrap; margin-top: var(--bx-spacing-md);">
+            <button disabled style="padding: 0.5rem 1rem; border: 1px solid var(--bx-color-border); background: var(--bx-color-bg-body); color: var(--bx-color-text-muted); border-radius: 4px;">New Client</button>
+            <button disabled style="padding: 0.5rem 1rem; border: 1px solid var(--bx-color-border); background: var(--bx-color-bg-body); color: var(--bx-color-text-muted); border-radius: 4px;">New Invoice</button>
+        </div>
+    </div>
+
+    <!-- Recent Items Placeholder -->
+    <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border); grid-column: 1 / -1;">
+        <h3 style="margin-bottom: var(--bx-spacing-md);">Recent Activity</h3>
+        <p style="color: var(--bx-color-text-muted); padding: var(--bx-spacing-lg); text-align: center; background: var(--bx-color-bg-body); border-radius: 4px;">
+            No recent activity found.
+        </p>
+    </div>
+
+</div>
+{% endblock %}

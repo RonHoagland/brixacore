@@ -1,0 +1,52 @@
+{% extends "layouts/app_shell.html" %}
+
+{% block title %}Users - BrixaWares{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block main_content %}
+<div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border);">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--bx-color-border); text-align: left;">
+                <th style="padding: var(--bx-spacing-sm);">
+                    <a href="?sort=username&dir={% if current_sort == 'username' and current_dir == 'asc' %}desc{% else %}asc{% endif %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
+                        Username
+                        {% if current_sort == 'username' %}{{ current_dir|yesno:"↓,↑" }}{% endif %}
+                    </a>
+                </th>
+                <th style="padding: var(--bx-spacing-sm);">
+                    <a href="?sort=email&dir={% if current_sort == 'email' and current_dir == 'asc' %}desc{% else %}asc{% endif %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
+                        Email
+                        {% if current_sort == 'email' %}{{ current_dir|yesno:"↓,↑" }}{% endif %}
+                    </a>
+                </th>
+                <th style="padding: var(--bx-spacing-sm);">
+                    <a href="?sort=is_active&dir={% if current_sort == 'is_active' and current_dir == 'asc' %}desc{% else %}asc{% endif %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
+                        Status
+                        {% if current_sort == 'is_active' %}{{ current_dir|yesno:"↓,↑" }}{% endif %}
+                    </a>
+                </th>
+                <th style="padding: var(--bx-spacing-sm);">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr style="border-bottom: 1px solid var(--bx-color-border);">
+                <td style="padding: var(--bx-spacing-sm);">{{ u.username }}</td>
+                <td style="padding: var(--bx-spacing-sm);">{{ u.email }}</td>
+                <td style="padding: var(--bx-spacing-sm);">
+                    {% if u.is_active %}
+                    <span style="color: var(--bx-color-success); font-weight: bold;">Active</span>
+                    {% else %}
+                    <span style="color: var(--bx-color-text-muted);">Inactive</span>
+                    {% endif %}
+                </td>
+                <td style="padding: var(--bx-spacing-sm);">
+                    <a href="{% url 'user_detail' u.pk %}" style="color: var(--bx-color-primary); font-weight: 500;">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

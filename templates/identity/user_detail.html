@@ -1,0 +1,44 @@
+{% extends "layouts/app_shell.html" %}
+
+{% block title %}User Detail - BrixaWares{% endblock %}
+{% block page_title %}User: {{ user_obj.username }}{% endblock %}
+
+{% block main_content %}
+<div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border); max-width: 600px;">
+    
+    <div style="margin-bottom: var(--bx-spacing-lg);">
+        <h3 style="margin-bottom: var(--bx-spacing-sm);">Profile</h3>
+        <p><strong>Username:</strong> {{ user_obj.username }}</p>
+        <p><strong>Email:</strong> {{ user_obj.email|default:"N/A" }}</p>
+        <p><strong>Last Login:</strong> {{ user_obj.last_login|default:"Never" }}</p>
+        <p><strong>Date Joined:</strong> {{ user_obj.date_joined|date:"M d, Y" }}</p>
+    </div>
+
+    <div style="margin-bottom: var(--bx-spacing-lg);">
+        <h3 style="margin-bottom: var(--bx-spacing-sm);">Status</h3>
+        <div style="display: flex; align-items: center; gap: var(--bx-spacing-md);">
+            <span>
+                Currently: 
+                {% if user_obj.is_active %}
+                <strong style="color: var(--bx-color-success);">Active</strong>
+                {% else %}
+                <strong style="color: var(--bx-color-danger);">Inactive</strong>
+                {% endif %}
+            </span>
+            
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle_active">
+                <button type="submit" style="padding: 0.25rem 0.75rem; border: 1px solid var(--bx-color-border); border-radius: 4px; background: var(--bx-color-bg-body); cursor: pointer;">
+                    {% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <a href="{% url 'user_list' %}" style="text-decoration: underline; color: var(--bx-color-text-muted);">Back to Users</a>
+    </div>
+
+</div>
+{% endblock %}
