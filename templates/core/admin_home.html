@@ -14,6 +14,12 @@
             <p style="color: var(--bx-color-text-muted); font-size: var(--bx-font-size-sm);">Manage system users and access roles.</p>
         </a>
 
+        <!-- Roles -->
+        <a href="{% url 'role_list' %}" class="card admin-card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border); display: block; transition: transform 0.2s;">
+            <h3 style="margin-bottom: var(--bx-spacing-sm); color: var(--bx-color-primary);">Roles</h3>
+            <p style="color: var(--bx-color-text-muted); font-size: var(--bx-font-size-sm);">Define and manage system permission roles.</p>
+        </a>
+
         <!-- Preferences -->
         <a href="{% url 'preference_list' %}" class="card admin-card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border); display: block; transition: transform 0.2s;">
             <h3 style="margin-bottom: var(--bx-spacing-sm); color: var(--bx-color-primary);">Preferences</h3>

@@ -36,7 +36,46 @@
         </div>
     </div>
 
-    <div>
+    <!-- Roles Section -->
+    <div style="margin-bottom: var(--bx-spacing-lg); border-top: 1px solid var(--bx-color-border); padding-top: var(--bx-spacing-lg);">
+        <h3 style="margin-bottom: var(--bx-spacing-sm);">Assigned Roles</h3>
+        
+        {% if user_obj.user_roles.exists %}
+        <ul style="list-style: none; padding: 0; margin-bottom: var(--bx-spacing-md);">
+            {% for ur in user_obj.user_roles.all %}
+            <li style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bx-color-bg-body); border-radius: 4px; margin-bottom: 4px;">
+                <span>
+                    <strong>{{ ur.role.name }}</strong> 
+                    <span style="color: var(--bx-color-text-muted); font-size: 0.9em;">({{ ur.role.key }})</span>
+                </span>
+                <form method="post" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="remove_role">
+                    <input type="hidden" name="role_id" value="{{ ur.role.id }}">
+                    <button type="submit" style="background: none; border: none; color: var(--bx-color-danger); cursor: pointer; font-size: 0.9em;" onclick="return confirm('Remove this role?');">Remove</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: var(--bx-color-text-muted); font-style: italic; margin-bottom: var(--bx-spacing-md);">No roles assigned.</p>
+        {% endif %}
+
+        <!-- Assign Role Form -->
+        <form method="post" style="display: flex; gap: 8px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_role">
+            <select name="role_id" required style="flex: 1; padding: 8px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+                <option value="">Select role to assign...</option>
+                {% for r in available_roles %}
+                <option value="{{ r.id }}">{{ r.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" style="background: var(--bx-color-primary); color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Assign</button>
+        </form>
+    </div>
+
+    <div style="margin-bottom: var(--bx-spacing-lg);">
         <a href="{% url 'user_list' %}" style="text-decoration: underline; color: var(--bx-color-text-muted);">Back to Users</a>
     </div>
 
