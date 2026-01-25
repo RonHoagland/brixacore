@@ -1,6 +1,10 @@
 import os
+import sys
 import django
 from pathlib import Path
+
+# Add project root to path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "platform_core.settings")
 django.setup()

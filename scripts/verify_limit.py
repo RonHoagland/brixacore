@@ -1,6 +1,11 @@
 import os
+import sys
 import django
+from pathlib import Path
 from django.core.exceptions import ValidationError
+
+# Add project root to path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "platform_core.settings")
 django.setup()
