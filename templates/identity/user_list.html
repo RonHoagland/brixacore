@@ -42,7 +42,10 @@
                     {% endif %}
                 </td>
                 <td style="padding: var(--bx-spacing-sm);">
-                    <a href="{% url 'user_detail' u.pk %}" style="color: var(--bx-color-primary); font-weight: 500;">Edit</a>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="{% url 'user_detail' u.pk %}" style="color: var(--bx-color-primary); font-weight: 500;">Edit</a>
+                        <a href="{% url 'user_delete' u.pk %}" style="color: var(--bx-color-danger); font-weight: 500; font-size: 0.9em;">Delete</a>
+                    </div>
                 </td>
             </tr>
             {% endfor %}

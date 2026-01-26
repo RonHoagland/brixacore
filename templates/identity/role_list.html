@@ -32,7 +32,10 @@
                     {% if r.is_system %}
                     <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 99px; font-size: 0.8em;">System</span>
                     {% else %}
-                    <span style="background: #f3f4f6; color: #4b5563; padding: 2px 8px; border-radius: 99px; font-size: 0.8em;">Custom</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="background: #f3f4f6; color: #4b5563; padding: 2px 8px; border-radius: 99px; font-size: 0.8em;">Custom</span>
+                        <a href="{% url 'role_delete' pk=r.id %}" style="color: var(--bx-color-danger); text-decoration: none; font-size: 0.9em; font-weight: 500;">Delete</a>
+                    </div>
                     {% endif %}
                 </td>
             </tr>

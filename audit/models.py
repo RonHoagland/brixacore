@@ -39,7 +39,7 @@ class Session(models.Model):
     
     user = models.ForeignKey(
         'auth.User',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,  # Allow deletion of users with only login records
         null=True,
         blank=True,
         help_text="User (null if authentication failed)"

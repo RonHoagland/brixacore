@@ -48,12 +48,12 @@
                     <strong>{{ ur.role.name }}</strong> 
                     <span style="color: var(--bx-color-text-muted); font-size: 0.9em;">({{ ur.role.key }})</span>
                 </span>
-                <form method="post" style="margin: 0;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="remove_role">
-                    <input type="hidden" name="role_id" value="{{ ur.role.id }}">
-                    <button type="submit" style="background: none; border: none; color: var(--bx-color-danger); cursor: pointer; font-size: 0.9em;" onclick="return confirm('Remove this role?');">Remove</button>
-                </form>
+                <div>
+                    <a href="{% url 'role_delete_confirm' user_id=user_obj.id role_id=ur.role.id %}" 
+                       style="color: var(--bx-color-danger); font-size: 0.9em; text-decoration: none;">
+                       Remove
+                    </a>
+                </div>
             </li>
             {% endfor %}
         </ul>
@@ -65,7 +65,7 @@
         <form method="post" style="display: flex; gap: 8px;">
             {% csrf_token %}
             <input type="hidden" name="action" value="add_role">
-            <select name="role_id" required style="flex: 1; padding: 8px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+            <select name="role_id" style="flex: 1; padding: 8px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
                 <option value="">Select role to assign...</option>
                 {% for r in available_roles %}
                 <option value="{{ r.id }}">{{ r.name }}</option>
