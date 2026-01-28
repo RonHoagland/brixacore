@@ -96,10 +96,55 @@ class UserProfile(BaseModel):
 		help_text="IANA time zone name (e.g., UTC, America/New_York)",
 	)
 
+	# Personal Information
+	birthday = models.DateField(
+		null=True,
+		blank=True,
+		help_text="Date of birth",
+	)
+
+	gender = models.CharField(
+		max_length=20,
+		choices=[
+			("male", "Male"),
+			("female", "Female"),
+			("other", "Other"),
+		],
+		blank=True,
+		help_text="Gender",
+	)
+
+	phone_number = models.CharField(
+		max_length=20,
+		blank=True,
+		help_text="Primary phone number",
+	)
+
+	# Employment Information
+	position = models.CharField(
+		max_length=200,
+		blank=True,
+		help_text="Job title or position",
+	)
+
+	date_left = models.DateField(
+		null=True,
+		blank=True,
+		help_text="Date employee left the organization (if applicable)",
+	)
+
+	# Additional Notes
+	notes = models.TextField(
+		blank=True,
+		help_text="Administrative notes about this user",
+	)
+
 	class Meta:
 		ordering = ["user__username"]
 		indexes = [
 			models.Index(fields=["user"]),
+			models.Index(fields=["position"]),
+			models.Index(fields=["date_left"]),
 		]
 
 	def __str__(self) -> str:  # pragma: no cover - trivial

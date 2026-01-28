@@ -10,17 +10,29 @@
         <p style="color: var(--bx-color-text-muted);">{{ pref.description }}</p>
     </div>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <div style="margin-bottom: var(--bx-spacing-md);">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Key</label>
-            <input type="text" value="{{ pref.key }}" disabled style="width: 100%; padding: 0.5rem; background: var(--bx-color-bg-body); border: 1px solid var(--bx-color-border); border-radius: 4px;">
-        </div>
-
         <div style="margin-bottom: var(--bx-spacing-lg);">
-            <label for="id_value" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Value ({{ pref.data_type }})</label>
-            <input type="text" name="value" id="id_value" value="{{ pref.value }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+            <label for="id_value" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Value</label>
+            
+            {% if widget_type == 'select' %}
+                <select name="value" id="id_value" style="width: 100%; padding: 0.5rem; border: 1px solid var(--bx-color-border); border-radius: 4px; background: white;">
+                    {% for k, v in choices %}
+                    <option value="{{ k }}" {% if k == pref.value %}selected{% endif %}>{{ v }}</option>
+                    {% endfor %}
+                </select>
+            {% elif widget_type == 'file' %}
+                <input type="file" name="value" id="id_value" style="width: 100%; padding: 0.5rem; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+                {% if pref.value %}
+                <div style="margin-top: 8px; font-size: 0.9em;">
+                    Current: <a href="{{ pref.value }}" target="_blank" style="color: var(--bx-color-primary);">{{ pref.value }}</a>
+                </div>
+                {% endif %}
+            {% else %}
+                <input type="text" name="value" id="id_value" value="{{ pref.value }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+            {% endif %}
+
             <div style="font-size: 0.85em; color: var(--bx-color-text-muted); margin-top: 0.25rem;">Default: {{ pref.default_value }}</div>
         </div>
 

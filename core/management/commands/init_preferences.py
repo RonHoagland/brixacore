@@ -10,43 +10,67 @@ class Command(BaseCommand):
         
         system_user, _ = User.objects.get_or_create(username='system', defaults={'is_active': False})
         
-        # Define standard preferences
+        # Define standard preferences based on preferences_functionality.md
         # (key, value, type, name, description)
         defaults = [
             # General / Company
             ('company_name', 'BrixaWares', 'string', 'Company Name', 'Name of the organization using the platform'),
-            ('company_address', '', 'string', 'Company Address', 'Physical address for reports/invoices'),
+            ('company_address_1', '', 'string', 'Address Line 1', 'Primary address line'),
+            ('company_address_2', '', 'string', 'Address Line 2', 'Secondary address line (Suite, Floor, etc.)'),
+            ('company_city', '', 'string', 'City', 'City'),
+            ('company_state', '', 'string', 'State/Province', 'State or Province'),
+            ('company_postalcode', '', 'string', 'Postal Code', 'ZIP or Postal Code'),
+            ('company_country', '', 'string', 'Country', 'Country Name'),
             ('company_phone', '', 'string', 'Company Phone', 'Contact number for reports'),
-            ('company_email', '', 'string', 'Company Email', 'Contact email for system notifications'),
             ('company_website', '', 'string', 'Company Website', 'Main website URL'),
+            ('company_logo_print', '', 'path', 'Print Logo', 'Path/URL to high-res logo for printed documents (300x100px)'),
+            ('company_logo_digital', '', 'path', 'Digital Logo', 'Path/URL to screen logo (150x75px)'),
+            ('default_logo_height', '50', 'integer', 'Default Logo Height', 'Logo height in pixels for layout'),
 
-            # System / UI
-            ('site_title', 'BrixaWares Platform', 'string', 'Site Title', 'Browser tab title'),
-            ('ui_theme_mode', 'light', 'string', 'Default Theme Mode', 'Default UI theme (light/dark)'),
-            ('ui_footer_text', '© 2026 BrixaWares', 'string', 'Footer Text', 'Text displayed in the application footer'),
-            ('ui_rows_per_page', '20', 'integer', 'Rows Per Page', 'Default number of items per list page'),
-
-            # Security
-            ('security_session_timeout', '60', 'integer', 'Session Timeout', 'Minutes of inactivity before logout'),
-            ('security_password_expiry', '90', 'integer', 'Password Expiry Days', 'Days before password change is required (0 to disable)'),
-            ('security_mfa_required', 'false', 'boolean', 'Require MFA', 'Enforce Multi-Factor Authentication for all users'),
+            # Financial & Localization
+            ('finance_default_currency', 'USD', 'string', 'Default Currency', 'Default currency code (e.g. USD, EUR)'),
+            ('finance_currency_symbol', '$', 'string', 'Currency Symbol', 'Symbol for currency display (e.g. $)'),
+            ('finance_tax_rate', '0.00', 'decimal', 'Global Tax Rate', 'Default system tax rate percentage'),
+            ('finance_tax_label', 'Tax', 'string', 'Tax Label', 'Label for tax on invoices (e.g. VAT, Sales Tax)'),
+            ('finance_decimal_precision', '2', 'integer', 'Decimal Precision', 'Number of decimal places for currency'),
+            ('loc_default_country', 'US', 'string', 'Default Country', 'ISO code for default country selection'),
+            ('loc_default_phone_code', '1', 'string', 'Default Phone Code', 'Country calling code (e.g. 1, 63)'),
+            ('loc_default_phone_format', '+1 (XXX) XXX-XXXX', 'string', 'Phone Format', 'Display format mask for phone numbers'),
+            ('loc_date_format', 'MM/DD/YYYY', 'string', 'Date Format', 'System-wide date display format'),
+            ('loc_timezone', 'America/Chicago', 'string', 'Time Zone', 'System default time zone'),
+            ('site_title', 'BrixaWares Platform', 'string', 'Site Title', 'Browser tab title'), # Kept as it is standard
 
             # Email Configuration
             ('email_from_address', 'noreply@brixawares.com', 'string', 'From Email Address', 'Default sender address for system emails'),
             ('email_smtp_host', 'smtp.example.com', 'string', 'SMTP Host', 'Mail server hostname'),
             ('email_smtp_port', '587', 'integer', 'SMTP Port', 'Mail server port'),
-            ('email_use_tls', 'true', 'boolean', 'Use TLS', 'Enable Transport Layer Security for email'),
-            
-            # Backup & Retention
-            ('backup_retention_days', '30', 'integer', 'Backup Retention (Days)', 'Number of days to keep automated backups'),
-            ('backup_storage_path', '/var/backups/brixa', 'path', 'Backup Storage Path', 'Absolute path for local backup storage'),
-            ('audit_log_retention_days', '365', 'integer', 'Audit Log Retention (Days)', 'Days to keep audit logs before archiving'),
+            ('email_smtp_user', '', 'string', 'SMTP Username', 'Username for SMTP authentication'),
+            ('email_smtp_password', '', 'string', 'SMTP Password', 'Password for SMTP authentication'),
+            ('email_use_tls', 'true', 'boolean', 'Use TLS', 'Enable Transport Layer Security'),
+            ('email_use_ssl', 'false', 'boolean', 'Use SSL', 'Enable Secure Sockets Layer'),
+
+            # Backup & Retention (Updated Spec)
+            ('backup_retention_days', '5', 'integer', 'Backup Retention (Days)', 'Number of days to keep backups (Min: 5)', True),
+            ('backup_storage_path', '/var/backups/brixa', 'path', 'Backup Storage Path', 'Absolute path for local backup storage', False),
+            ('backup_schedule_time', '02:00', 'time', 'Backup Time', 'Daily time to execute automatic backup (24h)', True),
+            ('backup_scope', 'database_only', 'string', 'Backup Scope', 'Scope of backup: database_only or database_documents', False),
+            ('audit_log_retention_days', '365', 'integer', 'Audit Log Retention', 'Days to keep audit logs before archiving', True),
         ]
 
+        # 1. UPSERT (Create or Update)
         created_count = 0
         updated_count = 0
+        current_keys = set()
 
-        for key, val, dtype, name, desc in defaults:
+        for config in defaults:
+            # Unpack with flexibility for optional is_editable
+            if len(config) == 6:
+                key, val, dtype, name, desc, editable = config
+            else:
+                key, val, dtype, name, desc = config
+                editable = True # Default
+                
+            current_keys.add(key)
             obj, created = Preference.objects.get_or_create(
                 key=key,
                 defaults={
@@ -56,21 +80,31 @@ class Command(BaseCommand):
                     'name': name,
                     'description': desc,
                     'created_by': system_user,
-                    'updated_by': system_user
+                    'updated_by': system_user,
+                    'is_editable': editable
                 }
             )
             
             if created:
                 created_count += 1
             else:
-                # Optional: Update metadata if it changed, but don't overwrite user-set values
+                # Update metadata if it changed (name, desc, type, is_editable)
                 updated = False
                 if obj.name != name: obj.name = name; updated = True
                 if obj.description != desc: obj.description = desc; updated = True
                 if obj.data_type != dtype: obj.data_type = dtype; updated = True
+                if obj.is_editable != editable: obj.is_editable = editable; updated = True
                 
                 if updated:
                     obj.save()
                     updated_count += 1
         
-        self.stdout.write(self.style.SUCCESS(f'Successfully processed preferences. Created: {created_count}, Updated: {updated_count}'))
+        # 2. CLEANUP (Remove obsolete keys)
+        # Find all keys in DB that are NOT in our defaults list
+        obsolete_prefs = Preference.objects.exclude(key__in=current_keys)
+        deleted_count = obsolete_prefs.count()
+        if deleted_count > 0:
+            self.stdout.write(f"Removing {deleted_count} obsolete preferences...")
+            obsolete_prefs.delete()
+
+        self.stdout.write(self.style.SUCCESS(f'Successfully processed preferences. Created: {created_count}, Updated: {updated_count}, Deleted: {deleted_count}'))

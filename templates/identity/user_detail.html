@@ -7,11 +7,44 @@
 <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border); max-width: 600px;">
     
     <div style="margin-bottom: var(--bx-spacing-lg);">
-        <h3 style="margin-bottom: var(--bx-spacing-sm);">Profile</h3>
-        <p><strong>Username:</strong> {{ user_obj.username }}</p>
-        <p><strong>Email:</strong> {{ user_obj.email|default:"N/A" }}</p>
-        <p><strong>Last Login:</strong> {{ user_obj.last_login|default:"Never" }}</p>
-        <p><strong>Date Joined:</strong> {{ user_obj.date_joined|date:"M d, Y" }}</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--bx-spacing-sm);">
+            <h3 style="margin: 0;">Profile</h3>
+            <a href="{% url 'user_edit' user_obj.pk %}" style="background: var(--bx-color-bg-surface); border: 1px solid var(--bx-color-border); padding: 4px 12px; border-radius: 4px; text-decoration: none; color: var(--bx-color-text); font-size: 0.9em;">
+                ✎ Edit User
+            </a>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--bx-spacing-sm); margin-bottom: var(--bx-spacing-md);">
+            <div>
+                <p><strong>Username:</strong> {{ user_obj.username }}</p>
+                <p><strong>Full Name:</strong> {{ user_obj.get_full_name|default:"-" }}</p>
+                <p><strong>Email:</strong> {{ user_obj.email|default:"N/A" }}</p>
+            </div>
+            <div>
+                <p><strong>Position:</strong> {{ user_obj.profile.position|default:"-" }}</p>
+                <p><strong>Phone:</strong> {{ user_obj.profile.phone_number|default:"-" }}</p>
+                <p><strong>Display Name:</strong> {{ user_obj.profile.display_name|default:"-" }}</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--bx-spacing-sm); margin-bottom: var(--bx-spacing-md);">
+            <div>
+                 <p><strong>Gender:</strong> {{ user_obj.profile.get_gender_display|default:"-" }}</p>
+                 <p><strong>Birthday:</strong> {{ user_obj.profile.birthday|date:"M d, Y"|default:"-" }}</p>
+            </div>
+             <div>
+                <p><strong>Date Joined:</strong> {{ user_obj.date_joined|date:"M d, Y" }}</p>
+                <p><strong>Date Left:</strong> {{ user_obj.profile.date_left|date:"M d, Y"|default:"-" }}</p>
+                <p><strong>Last Login:</strong> {{ user_obj.last_login|default:"Never" }}</p>
+            </div>
+        </div>
+        
+        {% if user_obj.profile.notes %}
+        <div style="margin-top: var(--bx-spacing-md); padding: var(--bx-spacing-md); background: var(--bx-color-bg-body); border-radius: 4px;">
+            <p style="margin: 0; font-weight: 500;">Notes:</p>
+            <p style="margin: 0; color: var(--bx-color-text-muted);">{{ user_obj.profile.notes|linebreaksbr }}</p>
+        </div>
+        {% endif %}
     </div>
 
     <div style="margin-bottom: var(--bx-spacing-lg);">

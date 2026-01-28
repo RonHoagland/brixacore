@@ -223,3 +223,90 @@ def user_delete_view(request, pk):
         messages.error(request, f"Error preparing user deletion: {e}")
         return redirect('user_list')
 
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def user_create_view(request):
+    from .forms import UserForm, UserProfileForm
+    from .models import UserProfile
+    
+    if request.method == "POST":
+        user_form = UserForm(request.POST)
+        profile_form = UserProfileForm(request.POST)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            try:
+                # Create user first
+                user = user_form.save(commit=False)
+                # Set a dummy unusable password for now since we don't have password field
+                user.set_unusable_password() 
+                user.save()
+                
+                # Check if profile already exists (via signal) or create new
+                if hasattr(user, 'profile'):
+                    profile = user.profile
+                else:
+                    profile = UserProfile(user=user)
+                
+                # Update profile fields
+                profile_data = profile_form.cleaned_data
+                for key, value in profile_data.items():
+                    setattr(profile, key, value)
+                
+                profile.created_by = request.user
+                profile.updated_by = request.user
+                profile.save()
+                
+                messages.success(request, f"User '{user.username}' created successfully.")
+                return redirect('user_detail', pk=user.pk)
+            except Exception as e:
+                messages.error(request, f"Error creating user: {e}")
+    else:
+        user_form = UserForm()
+        profile_form = UserProfileForm()
+        
+    return render(request, "identity/user_form.html", {
+        "user_form": user_form,
+        "profile_form": profile_form,
+        "is_edit": False
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def user_edit_view(request, pk):
+    from .forms import UserForm, UserProfileForm
+    from .models import UserProfile
+    
+    user_obj = get_object_or_404(User, pk=pk)
+    
+    # Ensure profile exists
+    if not hasattr(user_obj, 'profile'):
+        UserProfile.objects.create(user=user_obj, created_by=request.user, updated_by=request.user)
+        user_obj.refresh_from_db()
+        
+    if request.method == "POST":
+        user_form = UserForm(request.POST, instance=user_obj)
+        profile_form = UserProfileForm(request.POST, instance=user_obj.profile)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            try:
+                user_form.save()
+                
+                profile = profile_form.save(commit=False)
+                profile.updated_by = request.user
+                profile.save()
+                
+                messages.success(request, f"User '{user_obj.username}' updated successfully.")
+                return redirect('user_detail', pk=user_obj.pk)
+            except Exception as e:
+                messages.error(request, f"Error updating user: {e}")
+    else:
+        user_form = UserForm(instance=user_obj)
+        profile_form = UserProfileForm(instance=user_obj.profile)
+        
+    return render(request, "identity/user_form.html", {
+        "form": user_form, # logic in template uses form.instance
+        "user_form": user_form,
+        "profile_form": profile_form,
+        "is_edit": True
+    })
