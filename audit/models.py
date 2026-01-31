@@ -131,6 +131,7 @@ class UserTransaction(models.Model):
     EVENT_TYPE_CHOICES = [
         ('create', 'Create'),
         ('delete', 'Delete'),
+        ('update', 'Update'),
     ]
     
     id = models.UUIDField(

@@ -6,6 +6,12 @@ class UserForm(forms.ModelForm):
     first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(required=False, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    role = forms.ModelChoiceField(
+        queryset=None, # Populated in __init__
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        help_text="Assign a role to this user."
+    )
 
     class Meta:
         model = User
@@ -17,6 +23,16 @@ class UserForm(forms.ModelForm):
         help_texts = {
             'username': 'Required. 150 characters or fewer.',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import Role
+        self.fields['role'].queryset = Role.objects.all()
+        
+        if self.instance.pk:
+            current_role = self.instance.user_roles.first()
+            if current_role:
+                self.fields['role'].initial = current_role.role
 
 class UserProfileForm(forms.ModelForm):
     birthday = forms.DateField(

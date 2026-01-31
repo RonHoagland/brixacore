@@ -37,8 +37,8 @@ This document is **authoritative** for backup and restore behavior.
 ### Default Location (Windows)
 - `C:\ProgramData\BrixaWares\Backups\`
 
-### User‑Configurable Backup Path (Preferences)
-- Backup path is stored in **Preferences**
+### User‑Configurable Backup Path
+- Backup path is stored in **Backup Settings** (Backup App)
 - Must be an absolute path
 - **Must NOT be inside the application install directory**
 - May point to any drive or mount (e.g., `D:\`, removable, network)
@@ -53,10 +53,10 @@ This document is **authoritative** for backup and restore behavior.
 
 ---
 
-## Backup Schedule (Preferences‑Driven)
+## Backup Schedule (Backup App)
 
 ### Backup Time
-- Stored in **Preferences**
+- Stored in **Backup Settings**
 - Local system time
 - Default: **02:00 AM**
 - 24‑hour format
@@ -67,10 +67,10 @@ This document is **authoritative** for backup and restore behavior.
 
 ---
 
-## Backup Retention (Preferences‑Driven)
+## Backup Retention (Backup App)
 
 ### Retention Count
-- Stored in **Preferences**
+- Stored in **Backup Settings**
 - Minimum value: **5**
 - No upper hard limit
 

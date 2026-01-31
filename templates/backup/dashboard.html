@@ -7,37 +7,96 @@
 <div style="display: grid; gap: var(--bx-spacing-xl);">
 
     <!-- Settings Summary -->
+    <!-- Settings Summary -->
     <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--bx-spacing-md);">
             <h3 style="color: var(--bx-color-primary);">Configuration</h3>
-            <!-- Link to preferences if editing is needed -->
         </div>
+        
+        <!-- Backup Path (Read Only) -->
         <div style="margin-bottom: var(--bx-spacing-md);">
-            <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Backup Path</div>
-            <div style="font-weight: 500; word-break: break-all;">{{ settings.backup_path }}</div>
+            <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Backup Path (Read-only)</div>
+            <div style="font-weight: 500; word-break: break-all; color: var(--bx-color-text-light);">{{ settings.backup_path }}</div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--bx-spacing-md);">
-            <div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--bx-spacing-md);">
+            
+            <!-- Schedule -->
+            <div class="setting-item">
                 <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Schedule</div>
-                <div style="font-weight: 500;">Daily at {{ settings.schedule_time }}</div>
-            </div>
-            <div>
-                <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Retention</div>
-                <div style="font-weight: 500;">Keep last {{ settings.retention_count }}</div>
-            </div>
-            <div>
-                <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Status</div>
-                <div style="font-weight: 500;">
-                    {% if settings.is_enabled %}
-                    <span style="color: var(--bx-color-success);">Enabled</span>
-                    {% else %}
-                    <span style="color: var(--bx-color-text-muted);">Disabled</span>
-                    {% endif %}
+                
+                <div id="view-schedule" style="display: flex; align-items: center; gap: 8px;">
+                    <div style="font-weight: 500;">Daily at {{ settings.schedule_time }}</div>
+                    <button onclick="toggleEdit('schedule')" style="background: none; border: none; cursor: pointer; color: var(--bx-color-primary); font-size: 0.9em;">✎</button>
                 </div>
+                
+                <form id="edit-schedule" action="{% url 'update_backup_settings' %}" method="POST" style="display: none; margin-top: 4px;">
+                    {% csrf_token %}
+                    <input type="time" name="schedule_time" value="{{ settings.schedule_time|time:'H:i' }}" style="padding: 4px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+                    <button type="submit" style="padding: 4px 8px; background: var(--bx-color-primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+                    <button type="button" onclick="toggleEdit('schedule')" style="padding: 4px 8px; background: transparent; color: var(--bx-color-text-muted); border: none; cursor: pointer;">✕</button>
+                </form>
+            </div>
+
+            <!-- Retention -->
+            <div class="setting-item">
+                <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Retention</div>
+                
+                <div id="view-retention" style="display: flex; align-items: center; gap: 8px;">
+                    <div style="font-weight: 500;">Keep last {{ settings.retention_count }}</div>
+                    <button onclick="toggleEdit('retention')" style="background: none; border: none; cursor: pointer; color: var(--bx-color-primary); font-size: 0.9em;">✎</button>
+                </div>
+
+                <form id="edit-retention" action="{% url 'update_backup_settings' %}" method="POST" style="display: none; margin-top: 4px;">
+                    {% csrf_token %}
+                    <input type="number" name="retention_count" value="{{ settings.retention_count }}" min="5" style="width: 60px; padding: 4px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+                    <button type="submit" style="padding: 4px 8px; background: var(--bx-color-primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+                    <button type="button" onclick="toggleEdit('retention')" style="padding: 4px 8px; background: transparent; color: var(--bx-color-text-muted); border: none; cursor: pointer;">✕</button>
+                </form>
+            </div>
+
+            <!-- Status -->
+            <div class="setting-item">
+                <div style="font-size: 0.85em; color: var(--bx-color-text-muted);">Status</div>
+                
+                <div id="view-status" style="display: flex; align-items: center; gap: 8px;">
+                    <div style="font-weight: 500;">
+                        {% if settings.is_enabled %}
+                        <span style="color: var(--bx-color-success);">Enabled</span>
+                        {% else %}
+                        <span style="color: var(--bx-color-text-muted);">Disabled</span>
+                        {% endif %}
+                    </div>
+                    <button onclick="toggleEdit('status')" style="background: none; border: none; cursor: pointer; color: var(--bx-color-primary); font-size: 0.9em;">✎</button>
+                </div>
+
+                <form id="edit-status" action="{% url 'update_backup_settings' %}" method="POST" style="display: none; margin-top: 4px; align-items: center; gap: 8px;">
+                    {% csrf_token %}
+                    <select name="is_enabled" style="padding: 4px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
+                        <option value="true" {% if settings.is_enabled %}selected{% endif %}>Enabled</option>
+                        <option value="false" {% if not settings.is_enabled %}selected{% endif %}>Disabled</option>
+                    </select>
+                    <button type="submit" style="padding: 4px 8px; background: var(--bx-color-primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+                    <button type="button" onclick="toggleEdit('status')" style="padding: 4px 8px; background: transparent; color: var(--bx-color-text-muted); border: none; cursor: pointer;">✕</button>
+                </form>
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleEdit(field) {
+            const viewEl = document.getElementById('view-' + field);
+            const editEl = document.getElementById('edit-' + field);
+            
+            if (viewEl.style.display === 'none') {
+                viewEl.style.display = 'flex';
+                editEl.style.display = 'none';
+            } else {
+                viewEl.style.display = 'none';
+                editEl.style.display = 'flex';
+            }
+        }
+    </script>
 
     <!-- Actions -->
     <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border);">
@@ -89,6 +148,7 @@
                             {% if current_sort == 'database_size_bytes' %}{{ current_dir|yesno:"↓,↑" }}{% endif %}
                         </a>
                     </th>
+                    <th style="padding: var(--bx-spacing-sm);">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,6 +174,19 @@
                         {% else %}
                         -
                         {% endif %}
+                    </td>
+                    <td style="padding: var(--bx-spacing-sm);">
+                        {% if b.status == 'success' %}
+                        <form action="{% url 'restore_backup' b.backup_id %}" method="post" style="display: inline;" onsubmit="return confirm('WARNING: This will replace your current database with this backup. This cannot be undone. Are you sure?');">
+                            {% csrf_token %}
+                            <button type="submit" style="padding: 4px 12px; font-size: 0.85em; background-color: var(--bx-color-warning); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Restore</button>
+                        </form>
+                        {% endif %}
+                        
+                        <form action="{% url 'delete_backup' b.backup_id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this backup? This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" style="padding: 4px 12px; font-size: 0.85em; background-color: var(--bx-color-danger); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 {% empty %}

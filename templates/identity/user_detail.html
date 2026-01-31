@@ -87,24 +87,10 @@
                 <p style="color: var(--bx-color-danger); font-weight: bold;">No Role Assigned (Invalid State)</p>
             {% endif %}
         </div>
-
-        <!-- Change Role Form -->
-        <form method="post" style="display: flex; gap: 8px; align-items: flex-end;">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="set_role">
-            <div style="flex: 1;">
-                <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: 500;">Change Role To:</label>
-                <select name="role_id" style="width: 100%; padding: 8px; border: 1px solid var(--bx-color-border); border-radius: 4px;">
-                    <option value="">Select new role...</option>
-                    {% for r in available_roles %}
-                    <option value="{{ r.id }}">{{ r.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" style="background: var(--bx-color-text); color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
-                Update Role
-            </button>
-        </form>
+        
+        <p style="font-size: 0.9em; color: var(--bx-color-text-muted);">
+            To change the user's role, please <a href="{% url 'user_edit' user_obj.pk %}">edit the user profile</a>.
+        </p>
     </div>
 
     <div style="margin-bottom: var(--bx-spacing-lg);">

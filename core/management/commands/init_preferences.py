@@ -49,12 +49,8 @@ class Command(BaseCommand):
             ('email_use_tls', 'true', 'boolean', 'Use TLS', 'Enable Transport Layer Security'),
             ('email_use_ssl', 'false', 'boolean', 'Use SSL', 'Enable Secure Sockets Layer'),
 
-            # Backup & Retention (Updated Spec)
-            ('backup_retention_days', '5', 'integer', 'Backup Retention (Days)', 'Number of days to keep backups (Min: 5)', True),
-            ('backup_storage_path', '/var/backups/brixa', 'path', 'Backup Storage Path', 'Absolute path for local backup storage', False),
-            ('backup_schedule_time', '02:00', 'time', 'Backup Time', 'Daily time to execute automatic backup (24h)', True),
-            ('backup_scope', 'database_only', 'string', 'Backup Scope', 'Scope of backup: database_only or database_documents', False),
-            ('audit_log_retention_days', '365', 'integer', 'Audit Log Retention', 'Days to keep audit logs before archiving', True),
+            # Backup & Retention (Updated Spec - Managed in Backup App)
+             # REMOVED: backup_retention_days, backup_storage_path, backup_schedule_time, backup_scope, audit_log_retention_days
         ]
 
         # 1. UPSERT (Create or Update)

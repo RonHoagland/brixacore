@@ -20,14 +20,9 @@ SAFE_BACKUP_PATH.mkdir(exist_ok=True)
 
 print(f"Setting safe backup path: {SAFE_BACKUP_PATH}")
 
-# 1. Update Core Preference
-try:
-    pref = Preference.objects.get(key="backup_storage_path")
-    pref.value = str(SAFE_BACKUP_PATH)
-    pref.save()
-    print("✓ Updated 'backup_storage_path' Preference")
-except Preference.DoesNotExist:
-    print("✗ Preference 'backup_storage_path' not found")
+# 1. Update Core Preference (REMOVED - Backup settings are now exclusive to BackupSettings model)
+# previously updated 'backup_storage_path' preference
+
 
 # 2. Update BackupSettings (Singleton)
 try:

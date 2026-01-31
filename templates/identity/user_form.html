@@ -54,6 +54,14 @@
                 <p style="margin: 0; font-size: 0.9em; margin-top: 0.5rem;"><em>Implementation Note: Standard practice creates user with unusable password or sends reset email. For this app, you might want to set a default or add password fields.</em></p>
             </div>
             {% endif %}
+            
+            <div class="form-group" style="margin-top: var(--bx-spacing-md);">
+                <label for="{{ user_form.role.id_for_label }}" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Role</label>
+                {{ user_form.role }}
+                {% if user_form.role.help_text %}
+                <small style="color: var(--bx-color-text-muted); display: block; margin-top: 0.25rem;">{{ user_form.role.help_text }}</small>
+                {% endif %}
+            </div>
         </div>
 
         <div style="margin-bottom: var(--bx-spacing-xl);">

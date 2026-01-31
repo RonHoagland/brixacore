@@ -37,57 +37,7 @@ def user_list_view(request):
         "current_dir": sort_dir
     })
 
-@login_required
-@user_passes_test(lambda u: u.is_staff or u.is_superuser)
-def user_detail_view(request, pk):
-    user_obj = get_object_or_404(User, pk=pk)
-    all_roles = Role.objects.all()
-    user_role_ids = user_obj.user_roles.values_list('role_id', flat=True)
-    available_roles = all_roles.exclude(id__in=user_role_ids)
-    available_roles = all_roles.exclude(id__in=user_role_ids)
-    
-    if request.method == "POST":
-        action = request.POST.get('action')
-        
-        if action == 'toggle_active':
-            try:
-                user_obj.is_active = not user_obj.is_active
-                user_obj.save()
-                status_msg = "activated" if user_obj.is_active else "deactivated"
-                messages.success(request, f"User {user_obj.username} {status_msg}.")
-            except ValidationError as e:
-                messages.error(request, f"Cannot change status: {e.message}")
-            except Exception as e:
-                messages.error(request, f"Error updating status: {e}")
-        
-        elif action == 'set_role':
-            role_id = request.POST.get('role_id')
-            if role_id:
-                try:
-                    with transaction.atomic():
-                         role_obj = Role.objects.get(id=role_id)
-                         
-                         # Remove EXISTING roles (Single Policy: User has only 1 role)
-                         # This triggers 'prevent_last_admin_role_removal' if user is last admin.
-                         UserRole.objects.filter(user=user_obj).delete()
-                         
-                         # Set NEW role
-                         UserRole.objects.create(
-                            user=user_obj, 
-                            role=role_obj,
-                            created_by=request.user,
-                            updated_by=request.user
-                         )
-                         messages.success(request, f"Role changed to '{role_obj.name}'.")
-                except Exception as e:
-                    messages.error(request, f"Error setting role: {e}")
 
-        return redirect('user_detail', pk=pk)
-            
-    return render(request, "identity/user_detail.html", {
-        "user_obj": user_obj,
-        "available_roles": available_roles
-    })
 
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
@@ -227,6 +177,16 @@ def user_create_view(request):
                 profile.updated_by = request.user
                 profile.save()
                 
+                # Save Role
+                role = user_form.cleaned_data.get('role')
+                if role:
+                    UserRole.objects.create(
+                         user=user, 
+                         role=role,
+                         created_by=request.user,
+                         updated_by=request.user
+                    )
+
                 messages.success(request, f"User '{user.username}' created successfully.")
                 return redirect('user_detail', pk=user.pk)
             except Exception as e:
@@ -267,6 +227,19 @@ def user_edit_view(request, pk):
                 profile.updated_by = request.user
                 profile.save()
                 
+                # Save Role
+                role = user_form.cleaned_data.get('role')
+                if role:
+                    # Remove existing roles (Single Role Policy)
+                    UserRole.objects.filter(user=user_obj).delete()
+                    # Assign new role
+                    UserRole.objects.create(
+                         user=user_obj, 
+                         role=role,
+                         created_by=request.user,
+                         updated_by=request.user
+                    )
+                
                 messages.success(request, f"User '{user_obj.username}' updated successfully.")
                 return redirect('user_detail', pk=user_obj.pk)
             except Exception as e:
@@ -280,4 +253,29 @@ def user_edit_view(request, pk):
         "user_form": user_form,
         "profile_form": profile_form,
         "is_edit": True
+    })
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def user_detail_view(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    
+    if request.method == "POST":
+        action = request.POST.get('action')
+        
+        if action == 'toggle_active':
+            try:
+                user_obj.is_active = not user_obj.is_active
+                user_obj.save()
+                status_msg = "activated" if user_obj.is_active else "deactivated"
+                messages.success(request, f"User {user_obj.username} {status_msg}.")
+            except ValidationError as e:
+                messages.error(request, f"Cannot change status: {e.message}")
+            except Exception as e:
+                messages.error(request, f"Error updating status: {e}")
+        
+        return redirect('user_detail', pk=pk)
+            
+    return render(request, "identity/user_detail.html", {
+        "user_obj": user_obj
     })
