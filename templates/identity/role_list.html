@@ -8,16 +8,14 @@
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--bx-spacing-lg);">
         <p style="color: var(--bx-color-text-muted);">Manage system roles and permissions.</p>
-        <a href="{% url 'role_create' %}" style="background: var(--bx-color-primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-weight: 500;">
-            + Create Role
-        </a>
+        <p style="color: var(--bx-color-text-muted);">Manage system roles and permissions.</p>
     </div>
+
 
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="border-bottom: 2px solid var(--bx-color-border); text-align: left;">
                 <th style="padding: var(--bx-spacing-sm);">Name</th>
-                <th style="padding: var(--bx-spacing-sm);">Key</th>
                 <th style="padding: var(--bx-spacing-sm);">Description</th>
                 <th style="padding: var(--bx-spacing-sm);">Type</th>
             </tr>
@@ -26,16 +24,12 @@
             {% for r in roles %}
             <tr style="border-bottom: 1px solid var(--bx-color-border);">
                 <td style="padding: var(--bx-spacing-sm); font-weight: 500;">{{ r.name }}</td>
-                <td style="padding: var(--bx-spacing-sm); font-family: monospace; color: var(--bx-color-text-muted);">{{ r.key }}</td>
                 <td style="padding: var(--bx-spacing-sm);">{{ r.description }}</td>
                 <td style="padding: var(--bx-spacing-sm);">
                     {% if r.is_system %}
                     <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 99px; font-size: 0.8em;">System</span>
                     {% else %}
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <span style="background: #f3f4f6; color: #4b5563; padding: 2px 8px; border-radius: 99px; font-size: 0.8em;">Custom</span>
-                        <a href="{% url 'role_delete' pk=r.id %}" style="color: var(--bx-color-danger); text-decoration: none; font-size: 0.9em; font-weight: 500;">Delete</a>
-                    </div>
+                    <span style="background: #f3f4f6; color: #4b5563; padding: 2px 8px; border-radius: 99px; font-size: 0.8em;">Custom</span>
                     {% endif %}
                 </td>
             </tr>

@@ -1,5 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponseForbidden
+import os
+from .models import Preference
+
 
 @login_required
 def dashboard_view(request):
@@ -11,6 +15,16 @@ def dashboard_view(request):
         "recent_items": [],
         "notifications": [],
     }
+
+    # System Health Check: Verify Critical Paths
+    path_prefs = Preference.objects.filter(data_type='path')
+    for p in path_prefs:
+        if p.value and not os.path.exists(p.value):
+            context['notifications'].append({
+                'level': 'danger', 
+                'message': f"Critical Path Missing: {p.name} ({p.value}) does not exist on the server."
+            })
+
     return render(request, "core/dashboard.html", context)
 
 @login_required
@@ -64,7 +78,12 @@ from django.core.files.storage import default_storage
 def preference_update_view(request, pk):
     pref = get_object_or_404(Preference, pk=pk)
     
+    # SECURITY: Prevent editing sealed/locked preferences
+    if not pref.is_editable:
+        return HttpResponseForbidden("This preference is locked by system policy and cannot be edited.")
+    
     # 1. Determine Input Type & Choices
+
     widget_type = 'text'
     choices = None
     
@@ -99,6 +118,9 @@ def preference_update_view(request, pk):
 
     elif pref.data_type == 'path' and 'logo' in pref.key:
         widget_type = 'file'
+
+    elif pref.data_type == 'password':
+        widget_type = 'password'
 
     
     if request.method == "POST":

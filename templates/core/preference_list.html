@@ -34,7 +34,11 @@
                                 <span style="color: var(--bx-color-danger); font-weight: 600;">No</span>
                                 {% endif %}
                             {% else %}
-                                {{ p.value|truncatechars:50 }}
+                                {% if p.data_type == 'password' %}
+                                    <span style="color: var(--bx-color-text-muted);">******</span>
+                                {% else %}
+                                    {{ p.value|truncatechars:50 }}
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td style="padding: 12px 16px;">

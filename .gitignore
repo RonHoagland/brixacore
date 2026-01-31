@@ -36,3 +36,5 @@ htmlcov/
 
 # Project specific
 project_documents/
+cert.crt
+cert.key

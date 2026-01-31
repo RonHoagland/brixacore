@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "backup.apps.BackupConfig",
     "files.apps.FilesConfig",
     "app_shell.apps.AppShellConfig",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "identity.middleware.RolePermissionMiddleware",
 ]
 
 ROOT_URLCONF = "platform_core.urls"

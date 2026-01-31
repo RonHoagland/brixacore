@@ -153,6 +153,7 @@ class Preference(BaseModel):
         ('date', 'Date'),
         ('time', 'Time'),
         ('path', 'File/Directory Path'),
+        ('password', 'Password'),
     ]
     
     key = models.CharField(

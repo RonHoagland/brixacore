@@ -45,7 +45,7 @@ class Command(BaseCommand):
             ('email_smtp_host', 'smtp.example.com', 'string', 'SMTP Host', 'Mail server hostname'),
             ('email_smtp_port', '587', 'integer', 'SMTP Port', 'Mail server port'),
             ('email_smtp_user', '', 'string', 'SMTP Username', 'Username for SMTP authentication'),
-            ('email_smtp_password', '', 'string', 'SMTP Password', 'Password for SMTP authentication'),
+            ('email_smtp_password', '', 'password', 'SMTP Password', 'Password for SMTP authentication'),
             ('email_use_tls', 'true', 'boolean', 'Use TLS', 'Enable Transport Layer Security'),
             ('email_use_ssl', 'false', 'boolean', 'Use SSL', 'Enable Secure Sockets Layer'),
 

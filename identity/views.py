@@ -1,7 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db import transaction
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.http import HttpResponseForbidden
+from django.db.models import Min, Prefetch, Value, CharField
+from django.db.models.functions import Concat
 from .models import Role, UserRole
 
 from core.utils import apply_sorting
@@ -9,13 +13,20 @@ from core.utils import apply_sorting
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def user_list_view(request):
-    users = User.objects.all()
+    users = User.objects.all().prefetch_related('user_roles__role').select_related('profile')
+    
+    # Annotation for sorting by role (picks the first role name alphabetically)
+    # Annotation for full name sorting
+    users = users.annotate(
+        primary_role=Min('user_roles__role__name'),
+        full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField())
+    )
     
     # Sorting
     users, sort_field, sort_dir = apply_sorting(
         users, 
         request, 
-        allowed_fields=['username', 'email', 'is_active'], 
+        allowed_fields=['username', 'email', 'is_active', 'primary_role', 'full_name', 'profile__position'], 
         default_sort='username', 
         default_dir='asc'
     )
@@ -39,33 +50,37 @@ def user_detail_view(request, pk):
         action = request.POST.get('action')
         
         if action == 'toggle_active':
-            user_obj.is_active = not user_obj.is_active
-            user_obj.save()
-            messages.success(request, f"User {user_obj.username} active status changed.")
+            try:
+                user_obj.is_active = not user_obj.is_active
+                user_obj.save()
+                status_msg = "activated" if user_obj.is_active else "deactivated"
+                messages.success(request, f"User {user_obj.username} {status_msg}.")
+            except ValidationError as e:
+                messages.error(request, f"Cannot change status: {e.message}")
+            except Exception as e:
+                messages.error(request, f"Error updating status: {e}")
         
-        elif action == 'add_role':
+        elif action == 'set_role':
             role_id = request.POST.get('role_id')
             if role_id:
                 try:
-                    role_obj = Role.objects.get(id=role_id)
-                    UserRole.objects.create(
-                        user=user_obj, 
-                        role=role_obj,
-                        created_by=request.user,
-                        updated_by=request.user
-                    )
-                    messages.success(request, f"Role '{role_obj.name}' assigned.")
+                    with transaction.atomic():
+                         role_obj = Role.objects.get(id=role_id)
+                         
+                         # Remove EXISTING roles (Single Policy: User has only 1 role)
+                         # This triggers 'prevent_last_admin_role_removal' if user is last admin.
+                         UserRole.objects.filter(user=user_obj).delete()
+                         
+                         # Set NEW role
+                         UserRole.objects.create(
+                            user=user_obj, 
+                            role=role_obj,
+                            created_by=request.user,
+                            updated_by=request.user
+                         )
+                         messages.success(request, f"Role changed to '{role_obj.name}'.")
                 except Exception as e:
-                    messages.error(request, f"Error assigning role: {e}")
-        
-        elif action == 'remove_role':
-            role_id = request.POST.get('role_id')
-            if role_id:
-                try:
-                    UserRole.objects.filter(user=user_obj, role_id=role_id).delete()
-                    messages.success(request, "Role removed.")
-                except Exception as e:
-                    messages.error(request, f"Error removing role: {e}")
+                    messages.error(request, f"Error setting role: {e}")
 
         return redirect('user_detail', pk=pk)
             
@@ -83,29 +98,9 @@ def role_list_view(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def role_create_view(request):
-    if request.method == "POST":
-        name = request.POST.get('name')
-        key = request.POST.get('key')
-        description = request.POST.get('description')
-        
-        if name and key:
-            try:
-                Role.objects.create(
-                    name=name,
-                    key=key,
-                    description=description,
-                    is_system=False,
-                    created_by=request.user,
-                    updated_by=request.user
-                )
-                messages.success(request, f"Role '{name}' created.")
-                return redirect('role_list')
-            except Exception as e:
-                messages.error(request, f"Error creating role: {e}")
-        else:
-            messages.error(request, "Name and Key are required.")
-            
-    return render(request, "identity/role_form.html")
+    # STRICT ROLE MANAGEMENT: Disable Creation
+    return HttpResponseForbidden("Role creation is disabled in this version. Only system roles are allowed.")
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
@@ -138,33 +133,9 @@ def role_delete_confirm_view(request, user_id, role_id):
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def role_delete_view(request, pk):
-    """
-    Delete a custom role definition.
-    Protected: Cannot delete System roles or roles assigned to users.
-    """
-    try:
-        role = get_object_or_404(Role, pk=pk)
-        
-        # System Role Check
-        if role.is_system:
-            messages.error(request, f"Cannot delete system role '{role.name}'.")
-            return redirect('role_list')
-            
-        # Assignment Check
-        if role.assigned_users.exists():
-            messages.error(request, f"Cannot delete role '{role.name}' because it is assigned to users. Unassign it first.")
-            return redirect('role_list')
-        
-        if request.method == "POST":
-            role.delete()
-            messages.success(request, f"Role '{role.name}' deleted.")
-            return redirect('role_list')
-            
-        return render(request, "identity/role_definition_delete_confirm.html", {"role": role})
-        
-    except Exception as e:
-        messages.error(request, f"Error deleting role: {e}")
-        return redirect('role_list')
+    # STRICT ROLE MANAGEMENT: Disable Deletion
+    return HttpResponseForbidden("Role deletion is disabled in this version.")
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
