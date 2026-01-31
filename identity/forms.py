@@ -12,6 +12,18 @@ class UserForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-select'}),
         help_text="Assign a role to this user."
     )
+    
+    # Password Management
+    password = forms.CharField(
+        required=False, 
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'new-password'}),
+        help_text="Leave blank to keep current password."
+    )
+    password_confirm = forms.CharField(
+        required=False, 
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'new-password'}),
+        label="Confirm Password"
+    )
 
     class Meta:
         model = User
@@ -33,6 +45,31 @@ class UserForm(forms.ModelForm):
             current_role = self.instance.user_roles.first()
             if current_role:
                 self.fields['role'].initial = current_role.role
+        else:
+            self.fields['password'].help_text = "Required for new users (if not generating manually)."
+            
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        password_confirm = cleaned_data.get("password_confirm")
+
+        if password:
+            if password != password_confirm:
+                self.add_error('password_confirm', "Passwords do not match.")
+        
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get("password")
+        
+        if password:
+            user.set_password(password)
+            
+        if commit:
+            user.save()
+            
+        return user
 
 class UserProfileForm(forms.ModelForm):
     birthday = forms.DateField(

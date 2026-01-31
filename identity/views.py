@@ -156,10 +156,8 @@ def user_create_view(request):
         
         if user_form.is_valid() and profile_form.is_valid():
             try:
-                # Create user first
+                # Create user first (password handled by form.save())
                 user = user_form.save(commit=False)
-                # Set a dummy unusable password for now since we don't have password field
-                user.set_unusable_password() 
                 user.save()
                 
                 # Check if profile already exists (via signal) or create new
@@ -278,4 +276,53 @@ def user_detail_view(request, pk):
             
     return render(request, "identity/user_detail.html", {
         "user_obj": user_obj
+    })
+
+@login_required
+def my_profile_view(request):
+    """
+    Self-service profile editing for the logged-in user.
+    """
+    from .forms import UserForm, UserProfileForm
+    from .models import UserProfile
+    
+    user_obj = request.user
+    
+    # Ensure profile exists
+    if not hasattr(user_obj, 'profile'):
+        UserProfile.objects.create(user=user_obj, created_by=user_obj, updated_by=user_obj)
+        user_obj.refresh_from_db()
+
+    if request.method == "POST":
+        # Using UserForm but we might want to restrict fields (e.g. username) depending on policy
+        # For now, allowing full edit is fine for small teams.
+        user_form = UserForm(request.POST, instance=user_obj)
+        profile_form = UserProfileForm(request.POST, instance=user_obj.profile)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            try:
+                user_form.save()
+                
+                profile = profile_form.save(commit=False)
+                profile.updated_by = request.user
+                profile.save()
+                
+                messages.success(request, "Your profile has been updated.")
+                return redirect('my_profile')
+            except Exception as e:
+                messages.error(request, f"Error updating profile: {e}")
+    else:
+        user_form = UserForm(instance=user_obj)
+        profile_form = UserProfileForm(instance=user_obj.profile)
+    
+    # Hide role field for self-service if not admin? 
+    # Actually UserForm includes role field which we added. A regular user should not change their own role.
+    # We should disable it in the form or template.
+    if not request.user.is_staff and not request.user.is_superuser:
+        if 'role' in user_form.fields:
+            user_form.fields['role'].disabled = True
+
+    return render(request, "identity/my_profile.html", {
+        "user_form": user_form,
+        "profile_form": profile_form
     })

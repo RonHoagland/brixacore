@@ -40,7 +40,10 @@
             <h2>{% block page_title %}{% endblock %}</h2>
         </div>
         <div class="header-right">
-            <span>{{ user.username }}</span>
+            <a href="{% url 'my_profile' %}" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                <span>{{ user.username }}</span>
+                <span style="font-size: 0.8em; opacity: 0.8;">(My Profile)</span>
+            </a>
         </div>
     </header>
 
