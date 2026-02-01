@@ -21,3 +21,59 @@ def apply_sorting(queryset: QuerySet, request, allowed_fields: list, default_sor
         
     prefix = "-" if sort_dir == 'desc' else ""
     return queryset.order_by(f"{prefix}{sort_field}"), sort_field, sort_dir
+
+import csv
+from django.http import HttpResponse
+
+def generate_csv_response(queryset, filename, field_mapping):
+    """
+    Generate a CSV response for a given queryset.
+    
+    Args:
+        queryset: Django QuerySet to export
+        filename: Output filename (e.g. 'users.csv')
+        field_mapping: List of tuples [('Field Label', 'attribute_path')]
+                       Attribute path can use dots for relationships (e.g. 'profile.phone_number')
+                       
+    Returns:
+        HttpResponse with CSV content attached.
+    """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    
+    # Write Header
+    headers = [label for label, _ in field_mapping]
+    writer.writerow(headers)
+
+    # Write Data
+    for obj in queryset:
+        row = []
+        for _, attr_path in field_mapping:
+            # Resolve attribute path (e.g. "profile.phone_number")
+            value = obj
+            try:
+                for part in attr_path.split('.'):
+                    if value is None:
+                        break
+                    
+                    if hasattr(value, part):
+                         value = getattr(value, part)
+                         # Handle methods/callables
+                         if callable(value):
+                             value = value()
+                    elif isinstance(value, dict):
+                         value = value.get(part)
+                    else:
+                         value = None
+            except Exception:
+                value = ""
+                
+            # Handle duplicates/lists if needed (basic string conversion)
+            if value is None:
+                value = ""
+            row.append(str(value))
+        writer.writerow(row)
+
+    return response

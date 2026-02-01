@@ -6,9 +6,14 @@
 {% block main_content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--bx-spacing-lg);">
     <h1>Users</h1>
-    <a href="{% url 'user_create' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bx-color-primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none;">
-        <span>+ Add User</span>
-    </a>
+    <div style="display: flex; gap: 8px;">
+        <a href="{% url 'user_export' %}" class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bx-color-bg-surface); border: 1px solid var(--bx-color-border); color: var(--bx-color-text); padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none;">
+            <span>⬇ Export CSV</span>
+        </a>
+        <a href="{% url 'user_create' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bx-color-primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none;">
+            <span>+ Add User</span>
+        </a>
+    </div>
 </div>
 
 <div class="card" style="background: white; padding: var(--bx-spacing-lg); border-radius: 8px; border: 1px solid var(--bx-color-border);">

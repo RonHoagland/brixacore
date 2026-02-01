@@ -326,3 +326,33 @@ def my_profile_view(request):
         "user_form": user_form,
         "profile_form": profile_form
     })
+
+@login_required
+def user_export_view(request):
+    """
+    Export list of users to CSV.
+    """
+    from core.utils import generate_csv_response
+    
+    # Check permissions (Admin only? Or Workers too?)
+    # Usually export is sensitive. Let's restrict to Staff/Superuser for now.
+    if not request.user.is_staff and not request.user.is_superuser:
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied("You do not have permission to export user data.")
+    
+    queryset = User.objects.select_related('profile').all().order_by('username')
+    
+    # Define mapping: (Header, Attribute Path)
+    field_mapping = [
+        ('Username', 'username'),
+        ('Email', 'email'),
+        ('First Name', 'first_name'),
+        ('Last Name', 'last_name'),
+        ('Active', 'is_active'),
+        ('Position', 'profile.position'),
+        ('Phone', 'profile.phone_number'),
+        ('Date Joined', 'date_joined'),
+        ('Last Login', 'last_login'),
+    ]
+    
+    return generate_csv_response(queryset, "users_export.csv", field_mapping)

@@ -49,10 +49,7 @@ Examples:
 - Preferences
 - Backup/restore
 - File/document storage plumbing (paths, retention)
-- Scheduler/job runner (if any)
 - Import/export, printing
-- Diagnostics, app updates (if applicable)
-- Licensing activation + entitlement checks
 
 **Rule**: Core Utilities never depend on Base Modules or Application Modules. Everything else can depend on Core.
 
